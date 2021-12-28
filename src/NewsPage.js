@@ -9,6 +9,7 @@ import {
     RefreshControl,
     StyleSheet,
 } from 'react-native';
+import {FadeIn} from 'react-native-reanimated';
 import NewsItem from './components/NewItem';
 import Progress from './components/Progress';
 
@@ -57,10 +58,14 @@ const NewsPage = () => {
     const fadeIn = () => {
         Animated.timing(opacityValue, {
             toValue: 1,
-            duration: 2000,
+            duration: 1600,
             easing: Easing.linear,
             useNativeDriver: true,
         }).start(() => opacityValue.setValue(0));
+
+        setTimeout(() => {
+            setIsNewRefreshing(false);
+        }, 800);
     };
 
     useEffect(() => {
@@ -69,10 +74,6 @@ const NewsPage = () => {
 
     function refreshNews() {
         setIsNewRefreshing(true);
-        fadeIn();
-        setTimeout(() => {
-            setIsNewRefreshing(false);
-        }, 1000);
     }
 
     function renderNewsItems() {
@@ -85,16 +86,25 @@ const NewsPage = () => {
         <View style={styles.container}>
             <View style={styles.header}></View>
             <ScrollView
+                contentContainerStyle={{flexGrow: 1}}
                 refreshControl={
                     <RefreshControl
                         colors={['#1e90ff']}
-                        refreshing={isNewRefreshing}
+                        refreshing={false}
                         onRefresh={refreshNews}
                     />
                 }
                 style={styles.news_container}>
-                <Animated.View style={{opacity}}>
-                    {!isNewRefreshing ? renderNewsItems() : <Progress />}
+                <Animated.View style={{opacity: opacity, flex: 1}}>
+                    {!isNewRefreshing ? (
+                        renderNewsItems()
+                    ) : (
+                        <Progress
+                            onDone={() => {
+                                fadeIn();
+                            }}
+                        />
+                    )}
                 </Animated.View>
             </ScrollView>
         </View>
